@@ -1,0 +1,5 @@
+# 可以基于某个预设风格，如 LLVM, Google, Mozilla 等
+BasedOnStyle: Google
+
+# 核心设置：将缩进宽度设置为 4
+IndentWidth: 4
