@@ -26,9 +26,7 @@ int main() {
             NewCol.push_back(num);
             row++;
         }
-        //    col++;
         Matrix.push_back(NewCol);
-        //    row_max = (row_max > row) ? row_max : row;
     }
 
     col = Matrix.size();
@@ -92,7 +90,6 @@ void GetSolution(vector<vector<double>> Matrix, int col, int row) {
             sum -= Matrix[i][j] * solution[j];
         }
         solution[i] = sum / Matrix[i][i];
-        // cout << Matrix[i][row - 1] / Matrix[i][i];
     }
     for (int i = 0; i < col; i++) {
         double x = solution[i];
