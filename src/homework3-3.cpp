@@ -21,47 +21,60 @@
 #include <string>
 #include <vector>
 using namespace std;
-void GetUser();
-void Goth(int**, int, int);
+void GetSolution(vector<vector<double>>, int, int);
 int main() {
     string Input = "";
     vector<vector<double>> Matrix;
     int col = 0;
     int row = 0;
-    int row_max = 0;
-    // read the input and create matrix
+    //  read the input and create matrix
     while (getline(cin, Input)) {
+        // to judge whether ends
+        if (Input.empty()) break;
         istringstream istr(Input);
-        int num = 0;
+        vector<double> NewCol;
+        double num = 0;
         while (istr >> num) {
-            Matrix[col].push_back(num);
+            NewCol.push_back(num);
             row++;
         }
-        col++;
-        row_max = (row_max > row) ? row_max : row;
+        //    col++;
+        Matrix.push_back(NewCol);
+        //    row_max = (row_max > row) ? row_max : row;
     }
 
-    // to format the matrix
+    col = Matrix.size();
+    row = Matrix[0].size();
+
+    cout << "Have read " << col << " euqlations" << "\n";
+    cout << "And " << row - 1 << " Var nums" << "\n";
     for (int i = 0; i < col; i++) {
-        if (Matrix[i].size() < row) {
-            int tmp = Matrix[i].back();
-            while (Matrix[i].size() < row - 1) {
-                Matrix[i].push_back(0);
-            }
-            Matrix[i].push_back(tmp);
+        for (int j = 0; j < row; j++) {
+            cout << Matrix[i][j] << " ";
         }
+        cout << "\n";
     }
-
-    // Goth process
+    /*
+        // to format the matrix
+        for (int i = 0; i < col; i++) {
+            if (Matrix[i].size() < row) {
+                int tmp = Matrix[i].back();
+                while (Matrix[i].size() < row - 1) {
+                    Matrix[i].push_back(0);
+                }
+                Matrix[i].push_back(tmp);
+            }
+        }
+    */
+    // Gaussian process
     for (int i = 0; i < col - 1; i++)  // the location of the variable
     {
-        for (int j = i+1; j < col; j++) {
+        for (int j = i + 1; j < col; j++) {
             double times = Matrix[j][i] / Matrix[i][i];
             for (int k = 0; k < col; k++) {
-                Matrix[j][k] -= times * Matrix[i][i];
-                
+                Matrix[j][k] -= times * Matrix[i][k];
             }
-            }
+        }
     }
 
     // we assume that the Matrix has been formalized
@@ -76,9 +89,31 @@ int main() {
     switch (flag) {
         case 0:
             cout << "error1" << "\n";
+            break;
+        case 2:
+            cout << "error2" << "\n";
+            break;
         case 1:
-            
+            GetSolution(Matrix, col, row);
+            break;
     }
+
+    return 0;
 }
 
-void Goth(int** p, int m, int n) {}
+void GetSolution(vector<vector<double>> Matrix, int col, int row) {
+    // when there only one set of solutions, col == row-1
+    vector<double> solution(col);
+    for (int i = col - 1; i >= 0; i--) {
+        double sum = Matrix[i][row - 1];
+        for (int j = i + 1; j < col; j++) {
+            sum -= Matrix[i][j] * solution[j];
+        }
+        solution[i] = sum / Matrix[i][i];
+        // cout << Matrix[i][row - 1] / Matrix[i][i];
+    }
+    for (int i = 0; i < col; i++) {
+        printf("%.4f\n", solution[i]);
+    }
+    return;
+}
