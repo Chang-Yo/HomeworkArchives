@@ -1,136 +1,84 @@
 #include <cmath>
-#include <cstdio>
-#include <cstring>
 #include <iostream>
-#include <sstream>
-#include <string>
 #include <vector>
+
 using namespace std;
-void GetSolution(vector<vector<double>>, int, int);
-void CheckResult(vector<vector<double>>, int, int);
-void FormatResult(vector<vector<double>>, int, int);
+double GetSum(const vector<double>&);
+double GetSquareSum(const vector<double>&);
+double GetSquareSum(const vector<double>&, const vector<double>&);
+void GetUserInput(vector<double>&, vector<double>&);
+double CaculCorrelation(vector<double>, vector<double>);
 int main() {
-    string Input = "";
-    vector<vector<double>> Matrix;
-    int col = 0;
-    int row = 0;
-    //  read the input and create matrix
-    //  We assume that user type data formally
-    while (getline(cin, Input)) {
-        // to judge whether ends
-        if (Input.empty()) break;
-        istringstream istr(Input);
-        vector<double> NewCol;
-        double num = 0;
-        while (istr >> num) {
-            NewCol.push_back(num);
-            row++;
-        }
-        //    col++;
-        Matrix.push_back(NewCol);
-        //    row_max = (row_max > row) ? row_max : row;
-    }
+    vector<double> Xkdr, Ykdr;
+    double PreX = 0.0;
+    cin >> PreX;
 
-    col = Matrix.size();
-    row = Matrix[0].size();
+    // read input
+    GetUserInput(Xkdr, Ykdr);
 
-    // to check the Input's result
-    CheckResult(Matrix, col, row);
+    // cacul basic data
+    double X_sum = GetSum(Xkdr);
+    double Y_sum = GetSum(Ykdr);
+    double X_square_sum = GetSquareSum(Xkdr);
+    double Y_square_sum = GetSquareSum(Ykdr);
+    double XY_sum = GetSquareSum(Xkdr, Ykdr);
+    int size = Xkdr.size();
 
-    if (col < row - 1) {
-        cout << "error2" << "\n";
-        return 0;
-    }
-
-    // Gaussian process
-    for (int i = 0; i < col - 1; i++)  // the location of the variable
-    {
-        if (Matrix[i][i] == 0) {
-            continue;
-        }
-        for (int j = i + 1; j < col; j++) {
-            
-            double times = Matrix[j][i] / Matrix[i][i];
-            for (int k = 0; k < row; k++) {
-                Matrix[j][k] -= times * Matrix[i][k];
-            }
-        }
-    }
-    CheckResult(Matrix, col, row);
-
-    // we assume that the Matrix has been formalized
-    int flag;  // 0:No  1:only one  2:more than one
-    if (Matrix[col - 1][row - 2] == 0 && Matrix[col - 1][row - 1] != 0)
-        flag = 0;
-    else if (Matrix[col - 1][row - 2] != 0 && Matrix[col - 1][row - 1] != 0)
-        flag = 1;
-    else
-        flag = 2;
-
-    switch (flag) {
-        case 0:
-            cout << "error1" << "\n";
-            break;
-        case 2:
-            cout << "error2" << "\n";
-            break;
-        case 1:
-            GetSolution(Matrix, col, row);
-            break;
+    // the variables ====> y = weight * x + bias
+    double tmp1 = size * X_square_sum - X_sum * X_sum;
+    double tmp2 = size * Y_square_sum - Y_sum * Y_sum;
+    double tmp3 = size * XY_sum - X_sum * Y_sum;
+    double weight = tmp3 / tmp1;
+    double bias = (Y_sum - weight * X_sum) / size;
+    double R = tmp3 / sqrt(tmp1 * tmp2);
+    // output
+    if (abs(R) < 0.75) {
+        R=(int)(R*10000)/10000.0;
+        cout << R << "\n" << "error\nerror\n";
+    } else {
+        R = (int)(R * 10000) / 10000.0;
+        weight = (int)(weight * 10000) / 10000.0;
+        bias = (int)(bias * 10000) / 10000.0;
+        double prediction = PreX * weight + bias;
+        prediction = (int)(prediction * 10000) / 10000.0;
+        cout << R << "\n";
+        cout << "y=" << weight << "*x+" << bias << "\n";
+        cout << prediction << "\n";
     }
 
     return 0;
 }
 
-// to caculate the solution if the Matrix has ONLY one set of solution
-void GetSolution(vector<vector<double>> Matrix, int col, int row) {
-    // when there only one set of solutions, col == row-1
-    vector<double> solution(col);
-    for (int i = col - 1; i >= 0; i--) {
-        double sum = Matrix[i][row - 1];
-        for (int j = i + 1; j < col; j++) {
-            sum -= Matrix[i][j] * solution[j];
-        }
-        solution[i] = sum / Matrix[i][i];
-        // cout << Matrix[i][row - 1] / Matrix[i][i];
-    }
-    for (int i = 0; i < col; i++) {
-        double x = solution[i];
-        int rounded = round(x * 10000);
-        solution[i]= rounded/10000.0;
-        
-
-        cout << solution[i] << " ";
-    }
-    return;
-}
-
-// this func can print the Matrix
-void CheckResult(vector<vector<double>> Matrix, int col, int row) {
-    cout << "Have read " << col << " euqlations" << "\n";
-    cout << "And " << row - 1 << " Var nums" << "\n";
-    for (int i = 0; i < col; i++) {
-        for (int j = 0; j < row; j++) {
-            cout << Matrix[i][j] << " ";
-        }
-        cout << "\n";
+void GetUserInput(vector<double>& Xkdr, vector<double>& Ykdr) {
+    cin.ignore();
+    double x = 0.0, y = 0.0;
+    while (cin >> x >> y) {
+        Xkdr.push_back(x);
+        Ykdr.push_back(y);
     }
 }
 
-// this func can format the input when the user don't type formally. For example
-/*Input:
-  1 2 8             1 2 0 0 8
-  2 3 1 3      ===> 2 3 1 0 3
-  3 2 4 5 6         3 2 4 5 6
-*/
-void Format(vector<vector<double>> Matrix, int col, int row) {
-    for (int i = 0; i < col; i++) {
-        if (Matrix[i].size() < row) {
-            int tmp = Matrix[i].back();
-            while (Matrix[i].size() < row - 1) {
-                Matrix[i].push_back(0);
-            }
-            Matrix[i].push_back(tmp);
-        }
+double GetSum(const vector<double>& M) {
+    double tmp = 0.0;
+    for (int i = 0; i < M.size(); i++) tmp += M[i];
+    return tmp;
+}
+double GetSquareSum(const vector<double>& M) {
+    double tmp = 0.0;
+    for (int i = 0; i < M.size(); i++) {
+        tmp += M[i] * M[i];
     }
+    return tmp;
+}
+double GetSquareSum(const vector<double>& M, const vector<double>& N) {
+    double tmp = 0.0;
+    for (int i = 0; i < M.size(); i++) tmp += M[i] * N[i];
+    return tmp;
+}
+
+double GetAvg(const vector<double> M) {
+    int size = M.size();
+    double avg = 0.0;
+    for (int i = 0; i < size; i++) avg += M[i] / size;
+    return avg;
 }
