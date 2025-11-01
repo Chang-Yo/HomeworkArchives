@@ -1,33 +1,21 @@
-// requirement:
-/*任务描述
-编写程序，使用高斯消去法实现线性方程组求解，系数为整数或小数。
-
-相关知识
-列主元高斯消去法/雅可比迭代法。
-
-编程要求
-（1）读入线性方程组
-    程序的输入共有若干行，通过每一行输入，构建一个线性方程（如3 4 10
-代表线性方程为3*x1+4*x2=10）。 （2）利用高斯消去法计算 利用高斯消去法进行求解。
-（3）输出结果
-    （a）若有唯一解，依次输出所有变量的解，如果解为浮点数，数字最多保留至小数点后4位（截断或者四舍五入的方式均可）。
-    （b）若方程组无解（例如，0*x1=5），则输出error1；
-    （c）若方程组存在多个解（例如，0*x2=0），则输出error2；
-*/
-
+#include <cmath>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 using namespace std;
 void GetSolution(vector<vector<double>>, int, int);
+void CheckResult(vector<vector<double>>, int, int);
+void FormatResult(vector<vector<double>>, int, int);
 int main() {
     string Input = "";
     vector<vector<double>> Matrix;
     int col = 0;
     int row = 0;
     //  read the input and create matrix
+    //  We assume that user type data formally
     while (getline(cin, Input)) {
         // to judge whether ends
         if (Input.empty()) break;
@@ -46,36 +34,29 @@ int main() {
     col = Matrix.size();
     row = Matrix[0].size();
 
-    cout << "Have read " << col << " euqlations" << "\n";
-    cout << "And " << row - 1 << " Var nums" << "\n";
-    for (int i = 0; i < col; i++) {
-        for (int j = 0; j < row; j++) {
-            cout << Matrix[i][j] << " ";
-        }
-        cout << "\n";
+    // to check the Input's result
+    CheckResult(Matrix, col, row);
+
+    if (col < row - 1) {
+        cout << "error2" << "\n";
+        return 0;
     }
-    /*
-        // to format the matrix
-        for (int i = 0; i < col; i++) {
-            if (Matrix[i].size() < row) {
-                int tmp = Matrix[i].back();
-                while (Matrix[i].size() < row - 1) {
-                    Matrix[i].push_back(0);
-                }
-                Matrix[i].push_back(tmp);
-            }
-        }
-    */
+
     // Gaussian process
     for (int i = 0; i < col - 1; i++)  // the location of the variable
     {
+        if (Matrix[i][i] == 0) {
+            continue;
+        }
         for (int j = i + 1; j < col; j++) {
+            
             double times = Matrix[j][i] / Matrix[i][i];
-            for (int k = 0; k < col; k++) {
+            for (int k = 0; k < row; k++) {
                 Matrix[j][k] -= times * Matrix[i][k];
             }
         }
     }
+    CheckResult(Matrix, col, row);
 
     // we assume that the Matrix has been formalized
     int flag;  // 0:No  1:only one  2:more than one
@@ -101,6 +82,7 @@ int main() {
     return 0;
 }
 
+// to caculate the solution if the Matrix has ONLY one set of solution
 void GetSolution(vector<vector<double>> Matrix, int col, int row) {
     // when there only one set of solutions, col == row-1
     vector<double> solution(col);
@@ -113,7 +95,42 @@ void GetSolution(vector<vector<double>> Matrix, int col, int row) {
         // cout << Matrix[i][row - 1] / Matrix[i][i];
     }
     for (int i = 0; i < col; i++) {
-        printf("%.4f\n", solution[i]);
+        double x = solution[i];
+        int rounded = round(x * 10000);
+        solution[i]= rounded/10000.0;
+        
+
+        cout << solution[i] << " ";
     }
     return;
+}
+
+// this func can print the Matrix
+void CheckResult(vector<vector<double>> Matrix, int col, int row) {
+    cout << "Have read " << col << " euqlations" << "\n";
+    cout << "And " << row - 1 << " Var nums" << "\n";
+    for (int i = 0; i < col; i++) {
+        for (int j = 0; j < row; j++) {
+            cout << Matrix[i][j] << " ";
+        }
+        cout << "\n";
+    }
+}
+
+// this func can format the input when the user don't type formally. For example
+/*Input:
+  1 2 8             1 2 0 0 8
+  2 3 1 3      ===> 2 3 1 0 3
+  3 2 4 5 6         3 2 4 5 6
+*/
+void Format(vector<vector<double>> Matrix, int col, int row) {
+    for (int i = 0; i < col; i++) {
+        if (Matrix[i].size() < row) {
+            int tmp = Matrix[i].back();
+            while (Matrix[i].size() < row - 1) {
+                Matrix[i].push_back(0);
+            }
+            Matrix[i].push_back(tmp);
+        }
+    }
 }
