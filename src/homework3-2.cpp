@@ -47,10 +47,10 @@ int main() {
         cout << "error2" << "\n";
         return 0;
     }
-
+    vector<vector<double>>MatrixCopy=Matrix;
     // sort the Matrix to better iteration
     Poviting(Matrix, row, col);
-
+    CheckResult(Matrix, row, col);
     // To check if the Matrix is qualified for Jacobi Methods
     for (int i = 0; i < row; i++) {
         double sum = 0.0;
@@ -59,7 +59,7 @@ int main() {
             sum += Matrix[i][j];
         }
         if (Matrix[i][i] < sum) {
-            GetSolution_Gaussion(Matrix, row, col);
+            GetSolution_Gaussion(MatrixCopy, row, col);
             return 0;
         }
     }
