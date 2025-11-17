@@ -41,7 +41,7 @@
                 "-o",
                 "${workspaceFolder}/build/${fileBasenameNoExtension}"
             ],
-            "problemMatcher": "$gcc",
+            "problemMatcher": "$clang",
             "group": {
                 "kind": "build",
                 "isDefault": true
